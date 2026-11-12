@@ -8,7 +8,9 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Test IQ vui – bạn được bao nhiêu điểm?">
 <meta property="og:description" content="10 câu, 3 phút. Chơi thử rồi thách bạn bè!">
-<meta property="og:image" content="https://thuongdat.github.io/webgis/iq/preview.png">
+<meta property="og:image" content="https://thuongdat.github.io/webgis/iq/preview.png?v=2">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:url" content="https://thuongdat.github.io/webgis/iq/">
 <style>
   *, *::before, *::after { box-sizing: border-box; }
@@ -28,8 +30,9 @@
     max-width: 480px;
     margin: 0 auto;
     padding: 16px 16px 20px;
-    min-height: 100vh;
-    min-height: 100dvh;
+    /* --k: hệ số phóng to khi trình duyệt trên điện thoại hiển thị trang ở bề rộng máy tính */
+    min-height: calc(100vh / var(--k, 1));
+    min-height: calc(100dvh / var(--k, 1));
     display: flex;
     flex-direction: column;
   }
@@ -597,6 +600,17 @@ var QUESTIONS = [
   $("btn-start").addEventListener("click", function () { begin(); });
   $("btn-replay").addEventListener("click", function () { begin(); });
   document.addEventListener("visibilitychange", tick);
+
+  // Màn hình dọc mà bề rộng lại lớn (trình duyệt trong ứng dụng đang ở chế độ máy tính):
+  // phóng to cả trò chơi cho vừa khít bề ngang thay vì co lại thành một cột nhỏ.
+  function fit() {
+    var wide = window.innerHeight > window.innerWidth && window.innerWidth > 520;
+    var k = wide ? window.innerWidth / 480 : 1;
+    $("app").style.zoom = k === 1 ? "" : k;
+    $("app").style.setProperty("--k", k);
+  }
+  fit();
+  window.addEventListener("resize", fit);
 })();
 </script>
 </body>
