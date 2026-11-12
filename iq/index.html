@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test IQ vui</title>
+<meta name="description" content="10 câu, 3 phút. Chơi thử rồi thách bạn bè!">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Test IQ vui – bạn được bao nhiêu điểm?">
+<meta property="og:description" content="10 câu, 3 phút. Chơi thử rồi thách bạn bè!">
+<meta property="og:image" content="https://thuongdat.github.io/webgis/iq/preview.png">
+<meta property="og:url" content="https://thuongdat.github.io/webgis/iq/">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #fff;
+    background: linear-gradient(160deg, #2e1065 0%, #1e3a8a 55%, #0e7490 100%) fixed;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #app {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px 16px 20px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  .screen { display: flex; flex-direction: column; flex: 1; }
+  p, h1 { margin: 0; overflow-wrap: anywhere; }
+
+  /* Nút chung */
+  .btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; min-height: 52px; padding: 12px 16px;
+    border: 0; border-radius: 16px;
+    font: inherit; font-size: 17px; font-weight: 700; line-height: 1.25;
+    text-align: center; text-decoration: none; cursor: pointer;
+    overflow-wrap: anywhere;
+  }
+  .btn:focus-visible, .option:focus-visible { outline: 3px solid #fde047; outline-offset: 2px; }
+  .btn-primary { background: #fbbf24; color: #1e1b4b; box-shadow: 0 6px 0 #b45309; }
+  .btn-primary:active { transform: translateY(3px); box-shadow: 0 3px 0 #b45309; }
+  .btn-fb { background: #1877f2; color: #fff; }
+  .btn-dark { background: #0f0f14; color: #fff; }
+  .btn-ghost { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.55); }
+
+  /* Màn hình chào */
+  #screen-start { justify-content: center; text-align: center; gap: 28px; }
+  .brain { font-size: 76px; line-height: 1; }
+  h1 { font-size: 40px; font-weight: 800; letter-spacing: -.5px; margin-top: 12px; }
+  .tagline { font-size: 18px; margin-top: 10px; color: #e0e7ff; }
+  .note { font-size: 13px; line-height: 1.45; color: #c7d2fe; }
+
+  /* Màn hình câu hỏi */
+  #screen-question { gap: 14px; }
+  .qbar { display: flex; align-items: center; justify-content: space-between; }
+  #progress-text { font-size: 16px; font-weight: 700; }
+  #timer {
+    min-width: 52px; height: 36px; padding: 0 10px; border-radius: 18px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.16); font-size: 18px; font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  #timer.warn { background: #ef4444; }
+  .track { height: 8px; border-radius: 4px; background: rgba(255,255,255,.2); overflow: hidden; }
+  #progress-fill { height: 100%; width: 0; border-radius: 4px; background: #fbbf24; }
+  .card { background: #fff; color: #1e1b4b; border-radius: 22px; }
+  .qcard { padding: 20px 18px; text-align: center; }
+  #prompt { font-size: 19px; font-weight: 600; line-height: 1.4; }
+  #prompt .seq {
+    display: block; margin-top: 12px;
+    font-size: clamp(21px, 6.4vw, 30px); font-weight: 800; letter-spacing: .5px; color: #4c1d95;
+  }
+  #figure { margin: 12px auto 0; width: min(100%, 200px); }
+  #figure svg { display: block; width: 100%; height: auto; }
+  #options { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  #options.figures { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  #options.figures .option { padding: 6px; min-height: 64px; }
+  .option {
+    min-height: 54px; padding: 10px 14px;
+    display: flex; align-items: center; justify-content: center;
+    border: 0; border-radius: 16px;
+    background: #fff; color: #1e1b4b;
+    font: inherit; font-size: 18px; font-weight: 700; line-height: 1.3; text-align: center;
+    overflow-wrap: anywhere; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(15, 23, 42, .35);
+  }
+  .option:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(15, 23, 42, .35); }
+  .option svg { display: block; width: 100%; max-width: 58px; height: auto; }
+
+  /* Màn hình kết quả */
+  #screen-result { gap: 12px; }
+  .rcard { padding: 20px 18px 16px; text-align: center; box-shadow: 0 12px 30px rgba(0,0,0,.3); }
+  .rlabel { font-size: 14px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #6d28d9; }
+  #result-iq { font-size: 84px; font-weight: 900; line-height: 1.05; color: #4c1d95; font-variant-numeric: tabular-nums; }
+  #result-title { font-size: 24px; font-weight: 800; line-height: 1.25; margin-top: 4px; }
+  #result-quip { font-size: 16px; line-height: 1.4; margin-top: 6px; color: #3730a3; }
+  #result-correct {
+    display: inline-block; margin-top: 12px; padding: 6px 14px; border-radius: 999px;
+    background: #ede9fe; font-size: 15px; font-weight: 700;
+  }
+  .rfoot { margin-top: 12px; font-size: 12px; color: #6b7280; }
+  .hint { text-align: center; font-size: 16px; font-weight: 700; color: #fde68a; margin: 4px 0; }
+  .follow { display: flex; gap: 10px; }
+  .follow .btn { flex: 1; font-size: 15px; min-height: 50px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .qcard, #options { animation: rise .22s ease-out; }
+    .rcard { animation: pop .35s ease-out; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @keyframes pop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+  }
+</style>
+</head>
+<body>
+<main id="app">
+  <section id="screen-start" class="screen">
+    <div>
+      <div class="brain" aria-hidden="true">🧠</div>
+      <h1>Test IQ vui</h1>
+      <p class="tagline">10 câu, 3 phút, bạn được bao nhiêu điểm?</p>
+    </div>
+    <button id="btn-start" class="btn btn-primary" type="button">Bắt đầu</button>
+    <p class="note">Kết quả mang tính giải trí, không phải bài đo IQ chính thức.</p>
+  </section>
+
+  <section id="screen-question" class="screen" hidden>
+    <div class="qbar">
+      <span id="progress-text"></span>
+      <span id="timer" role="timer" aria-label="Số giây còn lại"></span>
+    </div>
+    <div class="track" aria-hidden="true"><div id="progress-fill"></div></div>
+    <div class="card qcard">
+      <p id="prompt"></p>
+      <div id="figure" hidden></div>
+    </div>
+    <div id="options"></div>
+  </section>
+
+  <section id="screen-result" class="screen" hidden>
+    <div class="card rcard">
+      <p class="rlabel">IQ vui của bạn</p>
+      <p id="result-iq"></p>
+      <p id="result-title"></p>
+      <p id="result-quip"></p>
+      <p id="result-correct"></p>
+      <p class="rfoot">IQ vui – chỉ để giải trí</p>
+    </div>
+    <p class="hint">Chụp màn hình và thách bạn bè!</p>
+    <a id="btn-share" class="btn btn-fb" target="_blank" rel="noopener">Chia sẻ lên Facebook</a>
+    <div class="follow">
+      <a id="btn-tiktok" class="btn btn-dark" target="_blank" rel="noopener">Theo dõi TikTok</a>
+      <a id="btn-fbpage" class="btn btn-fb" target="_blank" rel="noopener" hidden>Theo dõi trang Facebook</a>
+    </div>
+    <button id="btn-replay" class="btn btn-ghost" type="button">Chơi lại</button>
+  </section>
+</main>
+<script id="logic">
+// ===== Phần logic thuần: không đụng tới giao diện =====
+var CONFIG = {
+  SECONDS_PER_QUESTION: 20,
+  PICK: { easy: 4, medium: 4, hard: 2 },
+  POINTS: { easy: 1, medium: 2, hard: 3 },
+  SHARE_URL: "https://thuongdat.github.io/webgis/iq/",
+  TIKTOK_URL: "https://www.tiktok.com/@hoctienganhmoingay24.7",
+  // Dán link trang Facebook của bạn vào giữa hai dấu ngoặc kép bên dưới:
+  FB_PAGE_URL: "https://www.facebook.com/datluongthuong",
+  TITLES: [
+    { min: 70,  max: 89,  emoji: "🐟", name: "Não cá vàng chính hiệu", quip: "Quên luôn mình vừa bấm gì rồi." },
+    { min: 90,  max: 104, emoji: "🔄", name: "Não đang chờ cập nhật",  quip: "Còn 99%… vui lòng không tắt máy." },
+    { min: 105, max: 119, emoji: "🐦", name: "Tỉnh như sáo",           quip: "Ngủ đủ giấc là thành thiên tài ngay." },
+    { min: 120, max: 134, emoji: "😎", name: "Trùm cuối họp lớp",      quip: "Ai rủ chơi đố vui là gọi bạn đầu tiên." },
+    { min: 135, max: 145, emoji: "🧠", name: "Einstein gọi bằng cụ",   quip: "Xin vía bộ não này!" }
+  ]
+};
+
+function scoreRound(round, answers) {
+  var correct = 0, points = 0, max = 0;
+  for (var i = 0; i < round.length; i++) {
+    var worth = CONFIG.POINTS[round[i].level];
+    max += worth;
+    if (answers[i] === round[i].answer) { correct++; points += worth; }
+  }
+  var iq = 70 + Math.round(points / max * 75);
+  var title = CONFIG.TITLES[0];
+  for (var t = 0; t < CONFIG.TITLES.length; t++) {
+    if (iq >= CONFIG.TITLES[t].min && iq <= CONFIG.TITLES[t].max) title = CONFIG.TITLES[t];
+  }
+  return { correct: correct, points: points, iq: iq, title: title };
+}
+
+function shuffled(list, rng) {
+  var a = list.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(rng() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+// Rút 4 dễ, 4 vừa, 2 khó; xáo thứ tự đáp án. Không sửa mảng gốc.
+function pickRound(questions, rng) {
+  rng = rng || Math.random;
+  var round = [];
+  ["easy", "medium", "hard"].forEach(function (level) {
+    var pool = questions.filter(function (q) { return q.level === level; });
+    shuffled(pool, rng).slice(0, CONFIG.PICK[level]).forEach(function (q) {
+      var order = shuffled([0, 1, 2, 3], rng);
+      var copy = {};
+      for (var k in q) copy[k] = q[k];
+      copy.options = order.map(function (i) { return q.options[i]; });
+      copy.answer = order.indexOf(q.answer);
+      round.push(copy);
+    });
+  });
+  return round;
+}
+
+// ----- Vẽ hình bằng SVG -----
+var _figSeq = 0;
+var FIG_LAYOUT = {
+  1: { r: 30, at: [[50, 50]] },
+  2: { r: 19, at: [[28, 50], [72, 50]] },
+  3: { r: 17, at: [[50, 27], [27, 70], [73, 70]] },
+  4: { r: 17, at: [[28, 28], [72, 28], [28, 72], [72, 72]] }
+};
+
+function figPoints(pairs) {
+  return pairs.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ");
+}
+
+function figShape(shape, cx, cy, r, rot, paint) {
+  var turn = rot ? ' transform="rotate(' + rot + " " + cx + " " + cy + ')"' : "";
+  var attrs = paint + turn + "/>";
+  if (shape === "circle") return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '"' + attrs;
+  if (shape === "square") {
+    var s = r * 0.88;
+    return '<rect x="' + (cx - s) + '" y="' + (cy - s) + '" width="' + 2 * s + '" height="' + 2 * s + '"' + attrs;
+  }
+  var pts;
+  if (shape === "triangle") {
+    pts = [[cx, cy - r], [cx + r * 0.95, cy + r * 0.8], [cx - r * 0.95, cy + r * 0.8]];
+  } else if (shape === "diamond") {
+    pts = [[cx, cy - r * 1.1], [cx + r * 0.68, cy], [cx, cy + r * 1.1], [cx - r * 0.68, cy]];
+  } else { // star
+    pts = [];
+    for (var i = 0; i < 10; i++) {
+      var rad = i % 2 === 0 ? r * 1.1 : r * 0.46;
+      var ang = Math.PI * i / 5 - Math.PI / 2;
+      pts.push([cx + rad * Math.cos(ang), cy + rad * Math.sin(ang)]);
+    }
+  }
+  return '<polygon points="' + figPoints(pts) + '"' + attrs;
+}
+
+function figCell(cell, ox, oy, patternId) {
+  if (!cell) {
+    return '<text x="' + (ox + 50) + '" y="' + (oy + 68) + '" text-anchor="middle" font-size="52" ' +
+           'font-weight="700" fill="currentColor" opacity="0.55">?</text>';
+  }
+  var lay = FIG_LAYOUT[cell.count] || FIG_LAYOUT[1];
+  var fill = cell.fill === "solid" ? "currentColor" : cell.fill === "striped" ? "url(#" + patternId + ")" : "none";
+  var paint = ' fill="' + fill + '" stroke="currentColor" stroke-width="4" stroke-linejoin="round"';
+  return lay.at.map(function (p) {
+    return figShape(cell.shape, ox + p[0], oy + p[1], lay.r, cell.rot || 0, paint);
+  }).join("");
+}
+
+function renderFigure(spec) {
+  var cells, cols;
+  if (spec.kind === "grid") { cells = spec.cells; cols = 3; }
+  else if (spec.kind === "row") { cells = spec.cells; cols = spec.cells.length; }
+  else { cells = [spec.cell]; cols = 1; }
+  var rows = Math.ceil(cells.length / cols);
+  var pid = "fig" + (++_figSeq);
+  var out = '<svg viewBox="0 0 ' + cols * 100 + " " + rows * 100 + '" xmlns="http://www.w3.org/2000/svg" role="img">';
+  out += '<defs><pattern id="' + pid + '" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">' +
+         '<line x1="0" y1="0" x2="0" y2="7" stroke="currentColor" stroke-width="3.5"/></pattern></defs>';
+  if (spec.kind !== "cell") {
+    for (var b = 0; b < cells.length; b++) {
+      out += '<path d="M' + ((b % cols) * 100 + 3) + " " + (Math.floor(b / cols) * 100 + 3) + 'h94v94h-94z" ' +
+             'fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="2"/>';
+    }
+  }
+  for (var i = 0; i < cells.length; i++) {
+    out += figCell(cells[i], (i % cols) * 100, Math.floor(i / cols) * 100, pid);
+  }
+  return out + "</svg>";
+}
+
+// ----- Ngân hàng 30 câu hỏi -----
+// C(hình, số lượng, kiểu tô, góc xoay) tạo một ô hình.
+function C(shape, count, fill, rot) {
+  return { shape: shape, count: count, fill: fill, rot: rot || 0 };
+}
+var MATRIX_PROMPT = "Hình nào điền vào ô trống?";
+
+var QUESTIONS = [
+  // ===== DỄ =====
+  { id: "e01", level: "easy", type: "sequence", figure: null,
+    prompt: "Tìm số tiếp theo: 2, 4, 6, 8, ?",
+    options: ["9", "10", "11", "12"], answer: 1,
+    why: "Mỗi số cộng thêm 2." },
+  { id: "e02", level: "easy", type: "sequence", figure: null,
+    prompt: "Tìm số tiếp theo: 3, 6, 12, 24, ?",
+    options: ["30", "36", "42", "48"], answer: 3,
+    why: "Mỗi số gấp đôi số trước." },
+  { id: "e03", level: "easy", type: "sequence", figure: null,
+    prompt: "Tìm số tiếp theo: 20, 17, 14, 11, ?",
+    options: ["8", "9", "7", "6"], answer: 0,
+    why: "Mỗi số trừ đi 3." },
+  { id: "e04", level: "easy", type: "sequence", figure: null,
+    prompt: "Tìm số tiếp theo: 5, 10, 15, 20, ?",
+    options: ["22", "24", "25", "30"], answer: 2,
+    why: "Mỗi số cộng thêm 5." },
+  { id: "e05", level: "easy", type: "matrix", prompt: MATRIX_PROMPT,
+    figure: { kind: "grid", cells: [
+      C("circle", 1, "solid"),   C("circle", 1, "solid"),   C("circle", 1, "solid"),
+      C("square", 1, "solid"),   C("square", 1, "solid"),   C("square", 1, "solid"),
+      C("triangle", 1, "solid"), C("triangle", 1, "solid"), null ] },
+    options: [C("circle", 1, "solid"), C("triangle", 1, "solid"), C("square", 1, "solid"), C("star", 1, "solid")],
+    answer: 1,
+    why: "Mỗi hàng chỉ có một loại hình; hàng cuối là tam giác." },
+  { id: "e06", level: "easy", type: "matrix", prompt: MATRIX_PROMPT,
+    figure: { kind: "grid", cells: [
+      C("circle", 1, "solid"), C("circle", 2, "solid"), C("circle", 3, "solid"),
+      C("circle", 1, "solid"), C("circle", 2, "solid"), C("circle", 3, "solid"),
+      C("circle", 1, "solid"), C("circle", 2, "solid"), null ] },
+    options: [C("circle", 3, "solid"), C("circle", 1, "solid"), C("circle", 2, "solid"), C("circle", 4, "solid")],
+    answer: 0,
+    why: "Từ trái sang phải số hình tròn tăng 1, 2, 3." },
+  { id: "e07", level: "easy", type: "matrix", prompt: MATRIX_PROMPT,
+    figure: { kind: "grid", cells: [
+      C("square", 1, "solid"), C("square", 1, "empty"), C("square", 1, "striped"),
+      C("square", 1, "solid"), C("square", 1, "empty"), C("square", 1, "striped"),
+      C("square", 1, "solid"), C("square", 1, "empty"), null ] },
+    options: [C("square", 1, "solid"), C("square", 1, "empty"), C("circle", 1, "striped"), C("square", 1, "striped")],
+    answer: 3,
+    why: "Mỗi hàng là hình vuông tô đặc, rỗng, rồi gạch sọc." },
+  { id: "e08", level: "easy", type: "logic", figure: null,
+    prompt: "Số nào khác loại với ba số còn lại?",
+    options: ["2", "4", "7", "8"], answer: 2,
+    why: "2, 4, 8 là số chẵn; chỉ 7 là số lẻ." },
+  { id: "e09", level: "easy", type: "logic", figure: null,
+    prompt: "Lan cao hơn Mai. Mai cao hơn Hoa. Ai thấp nhất?",
+    options: ["Lan", "Mai", "Hoa", "Không xác định được"], answer: 2,
+    why: "Lan > Mai > Hoa nên Hoa thấp nhất." },
+  { id: "e10", level: "easy", type: "logic", figure: null,
+    prompt: "Hình nào khác loại với ba hình còn lại?",
+    options: [C("circle", 2, "solid"), C("square", 2, "solid"), C("circle", 2, "empty"), C("circle", 2, "striped")],
+    answer: 1,
+    why: "Ba hình là hình tròn; chỉ một hình là hình vuông." },
+
+  // ===== VỪA =====
+  { id: "m01", level: "medium", type: "sequence", figure: null,
+    prompt: "Tìm số tiếp theo: 2, 6, 12, 20, 30, ?",
+    options: ["36", "40", "42", "44"], answer: 2,
+    why: "Khoảng cách tăng dần 4, 6, 8, 10, rồi 12." },
+  { id: "m02", level: "medium", type: "sequence", figure: null,
+    prompt: "Tìm số tiếp theo: 1, 4, 9, 16, 25, ?",
+    options: ["36", "30", "35", "49"], answer: 0,
+    why: "Dãy số chính phương: 1², 2², 3², 4², 5², 6²." },
+  { id: "m03", level: "medium", type: "sequence", figure: null,
+    prompt: "Tìm số tiếp theo: 1, 10, 2, 20, 3, 30, ?",
+    options: ["31", "40", "5", "4"], answer: 3,
+    why: "Hai dãy xen kẽ: 1, 2, 3, 4 và 10, 20, 30." },
+  { id: "m04", level: "medium", type: "sequence", figure: null,
+    prompt: "Tìm số tiếp theo: 3, 5, 9, 17, 33, ?",
+    options: ["49", "65", "57", "66"], answer: 1,
+    why: "Khoảng cách gấp đôi mỗi bước: 2, 4, 8, 16, rồi 32." },
+  { id: "m05", level: "medium", type: "matrix", prompt: MATRIX_PROMPT,
+    figure: { kind: "grid", cells: [
+      C("circle", 1, "solid"),   C("square", 1, "solid"),   C("triangle", 1, "solid"),
+      C("square", 1, "solid"),   C("triangle", 1, "solid"), C("circle", 1, "solid"),
+      C("triangle", 1, "solid"), C("circle", 1, "solid"),   null ] },
+    options: [C("circle", 1, "solid"), C("triangle", 1, "solid"), C("square", 1, "solid"), C("diamond", 1, "solid")],
+    answer: 2,
+    why: "Mỗi hàng và mỗi cột có đủ ba hình tròn, vuông, tam giác." },
+  { id: "m06", level: "medium", type: "matrix", prompt: MATRIX_PROMPT,
+    figure: { kind: "grid", cells: [
+      C("circle", 1, "solid"), C("circle", 2, "solid"), C("circle", 3, "solid"),
+      C("square", 1, "solid"), C("square", 2, "solid"), C("square", 3, "solid"),
+      C("star", 1, "solid"),   C("star", 2, "solid"),   null ] },
+    options: [C("star", 2, "solid"), C("star", 3, "solid"), C("square", 3, "solid"), C("circle", 3, "solid")],
+    answer: 1,
+    why: "Hàng quyết định loại hình, cột quyết định số lượng: ngôi sao, 3 cái." },
+  { id: "m07", level: "medium", type: "matrix", prompt: MATRIX_PROMPT,
+    figure: { kind: "grid", cells: [
+      C("circle", 1, "solid"),   C("triangle", 1, "solid"),   C("square", 1, "solid"),
+      C("circle", 1, "empty"),   C("triangle", 1, "empty"),   C("square", 1, "empty"),
+      C("circle", 1, "striped"), C("triangle", 1, "striped"), null ] },
+    options: [C("square", 1, "striped"), C("square", 1, "solid"), C("triangle", 1, "striped"), C("square", 1, "empty")],
+    answer: 0,
+    why: "Hàng quyết định kiểu tô, cột quyết định loại hình: hình vuông gạch sọc." },
+  { id: "m08", level: "medium", type: "logic", figure: null,
+    prompt: "An lớn tuổi hơn Bình. Bình lớn tuổi hơn Chi. Dũng nhỏ tuổi hơn Chi. Ai lớn tuổi thứ hai?",
+    options: ["An", "Chi", "Dũng", "Bình"], answer: 3,
+    why: "Thứ tự là An, Bình, Chi, Dũng nên Bình lớn thứ hai." },
+  { id: "m09", level: "medium", type: "logic", figure: null,
+    prompt: "Tất cả mèo đều thích cá. Miu là một con mèo. Câu nào chắc chắn đúng?",
+    options: ["Miu thích sữa", "Miu thích cá", "Ai thích cá cũng là mèo", "Miu không thích cá"], answer: 1,
+    why: "Miu là mèo, mà mọi con mèo đều thích cá." },
+  { id: "m10", level: "medium", type: "logic", figure: null,
+    prompt: "Nếu hôm kia là thứ Năm thì ngày mai là thứ mấy?",
+    options: ["Chủ nhật", "Thứ Sáu", "Thứ Bảy", "Thứ Hai"], answer: 0,
+    why: "Hôm kia thứ Năm thì hôm nay thứ Bảy, ngày mai Chủ nhật." },
+
+  // ===== KHÓ =====
+  { id: "h01", level: "hard", type: "sequence", figure: null,
+    prompt: "Tìm số tiếp theo: 1, 3, 4, 7, 11, 18, ?",
+    options: ["25", "27", "36", "29"], answer: 3,
+    why: "Mỗi số bằng tổng hai số đứng trước: 11 + 18 = 29." },
+  { id: "h02", level: "hard", type: "sequence", figure: null,
+    prompt: "Tìm số tiếp theo: 0, 7, 26, 63, 124, ?",
+    options: ["215", "195", "216", "225"], answer: 0,
+    why: "Lập phương trừ 1: 1³−1, 2³−1, … , 6³−1 = 215." },
+  { id: "h03", level: "hard", type: "sequence", figure: null,
+    prompt: "Tìm số tiếp theo: 1, 2, 6, 24, 120, ?",
+    options: ["240", "600", "720", "840"], answer: 2,
+    why: "Lần lượt nhân 2, 3, 4, 5, rồi 6: 120 × 6 = 720." },
+  { id: "h04", level: "hard", type: "sequence", figure: null,
+    prompt: "Tìm số tiếp theo: 2, 3, 5, 7, 11, 13, ?",
+    options: ["15", "17", "16", "19"], answer: 1,
+    why: "Dãy số nguyên tố; số nguyên tố sau 13 là 17." },
+  { id: "h05", level: "hard", type: "matrix", prompt: MATRIX_PROMPT,
+    figure: { kind: "grid", cells: [
+      C("circle", 1, "solid"),     C("circle", 2, "empty"),   C("circle", 3, "striped"),
+      C("triangle", 1, "empty"),   C("triangle", 2, "striped"), C("triangle", 3, "solid"),
+      C("diamond", 1, "striped"),  C("diamond", 2, "solid"),  null ] },
+    options: [C("diamond", 3, "solid"), C("diamond", 3, "striped"), C("diamond", 2, "empty"), C("diamond", 3, "empty")],
+    answer: 3,
+    why: "Hàng: loại hình; cột: số lượng; mỗi hàng và cột đủ ba kiểu tô nên còn thiếu rỗng." },
+  { id: "h06", level: "hard", type: "matrix", prompt: MATRIX_PROMPT,
+    figure: { kind: "grid", cells: [
+      C("triangle", 1, "solid", 0),     C("triangle", 1, "solid", 90),    C("triangle", 1, "solid", 180),
+      C("triangle", 1, "empty", 90),    C("triangle", 1, "empty", 180),   C("triangle", 1, "empty", 270),
+      C("triangle", 1, "striped", 180), C("triangle", 1, "striped", 270), null ] },
+    options: [C("triangle", 1, "striped", 90), C("triangle", 1, "striped", 0), C("triangle", 1, "solid", 0), C("triangle", 1, "striped", 270)],
+    answer: 1,
+    why: "Mỗi bước sang phải hoặc xuống dưới xoay thêm 90°; hàng cuối tô sọc, 270° + 90° quay về hướng lên." },
+  { id: "h07", level: "hard", type: "matrix", prompt: MATRIX_PROMPT,
+    figure: { kind: "grid", cells: [
+      C("square", 1, "solid"), C("square", 1, "solid"), C("square", 2, "solid"),
+      C("square", 1, "solid"), C("square", 2, "solid"), C("square", 3, "solid"),
+      C("square", 2, "solid"), C("square", 2, "solid"), null ] },
+    options: [C("square", 2, "solid"), C("square", 3, "solid"), C("square", 4, "solid"), C("square", 1, "solid")],
+    answer: 2,
+    why: "Ô thứ ba của mỗi hàng bằng tổng hai ô đầu: 2 + 2 = 4." },
+  { id: "h08", level: "hard", type: "logic", figure: null,
+    prompt: "Hàng có 5 người. Chi đứng trước An, An đứng trước Bình. Dũng đứng ngay sau Chi. Hà đứng cuối hàng. Ai đứng chính giữa?",
+    options: ["An", "Bình", "Chi", "Dũng"], answer: 0,
+    why: "Thứ tự duy nhất là Chi, Dũng, An, Bình, Hà nên An đứng giữa." },
+  { id: "h09", level: "hard", type: "logic", figure: null,
+    prompt: "Mọi bác sĩ ở đây đều biết bơi. Không ai biết bơi mà sợ nước. Câu nào chắc chắn đúng?",
+    options: ["Ai biết bơi cũng là bác sĩ", "Có bác sĩ ở đây sợ nước", "Ai không sợ nước cũng biết bơi", "Không bác sĩ nào ở đây sợ nước"], answer: 3,
+    why: "Bác sĩ đều biết bơi, người biết bơi không sợ nước, nên không bác sĩ nào sợ nước." },
+  { id: "h10", level: "hard", type: "logic", figure: null,
+    prompt: "Ốc sên leo cột cao 10 m. Ban ngày leo lên 3 m, ban đêm tụt xuống 2 m. Ngày thứ mấy nó lên tới đỉnh?",
+    options: ["Ngày thứ 7", "Ngày thứ 8", "Ngày thứ 9", "Ngày thứ 10"], answer: 1,
+    why: "Sau 7 ngày đêm ốc ở 7 m; ban ngày thứ 8 leo thêm 3 m là tới 10 m." }
+];
+</script>
+<script id="ui">
+// ===== Phần giao diện =====
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var screens = ["screen-start", "screen-question", "screen-result"];
+  var SHAPE_NAMES = { circle: "hình tròn", square: "hình vuông", triangle: "hình tam giác", diamond: "hình thoi", star: "ngôi sao" };
+  var FILL_NAMES = { solid: "tô đặc", empty: "rỗng", striped: "gạch sọc" };
+
+  // ?t=<giây> chỉ dùng khi kiểm tra; chỉ nhận số nguyên 1–20.
+  var seconds = CONFIG.SECONDS_PER_QUESTION;
+  var tParam = new URLSearchParams(location.search).get("t");
+  if (tParam && /^\d+$/.test(tParam) && +tParam >= 1 && +tParam <= 20) seconds = +tParam;
+
+  var state = { round: [], answers: [], begin: begin };
+  window.__iq = state;
+
+  var index = 0;      // câu đang hiển thị
+  var token = 0;      // mã lượt-câu: mọi cú bấm và nhịp đồng hồ cũ đều bị bỏ qua
+  var deadline = 0;
+  var shownAt = 0;    // lúc câu hiện ra, để bỏ qua cú chạm đúp rơi vào câu mới
+  var TAP_GUARD_MS = 350;
+  var ticker = null;
+
+  function show(id) {
+    screens.forEach(function (s) { $(s).hidden = s !== id; });
+    window.scrollTo(0, 0);
+  }
+
+  function describe(cell) {
+    var text = cell.count + " " + SHAPE_NAMES[cell.shape] + " " + FILL_NAMES[cell.fill];
+    return cell.rot ? text + ", xoay " + cell.rot + " độ" : text;
+  }
+
+  function begin(round) {
+    state.round = round || pickRound(QUESTIONS);
+    state.answers = [];
+    index = 0;
+    show("screen-question");
+    showQuestion();
+  }
+
+  function showQuestion() {
+    var q = state.round[index];
+    var mine = ++token;
+    $("progress-text").textContent = "Câu " + (index + 1) + "/" + state.round.length;
+    $("progress-fill").style.width = (index / state.round.length * 100) + "%";
+
+    var prompt = $("prompt");
+    prompt.textContent = "";
+    var cut = q.type === "sequence" ? q.prompt.indexOf(": ") : -1;
+    if (cut > -1) {
+      prompt.appendChild(document.createTextNode(q.prompt.slice(0, cut + 1) + " "));
+      var seq = document.createElement("span");
+      seq.className = "seq";
+      seq.textContent = q.prompt.slice(cut + 2);
+      prompt.appendChild(seq);
+    } else {
+      prompt.textContent = q.prompt;
+    }
+
+    var figure = $("figure");
+    figure.hidden = !q.figure;
+    figure.innerHTML = q.figure ? renderFigure(q.figure) : "";
+
+    var box = $("options");
+    box.textContent = "";
+    box.className = typeof q.options[0] === "string" ? "" : "figures";
+    q.options.forEach(function (opt, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "option";
+      b.setAttribute("data-index", i);
+      if (typeof opt === "string") {
+        b.textContent = opt;
+      } else {
+        b.innerHTML = renderFigure({ kind: "cell", cell: opt });
+        b.setAttribute("aria-label", describe(opt));
+      }
+      b.addEventListener("click", function () { answer(mine, i); });
+      box.appendChild(b);
+    });
+
+    shownAt = Date.now();
+    deadline = shownAt + seconds * 1000;
+    clearInterval(ticker);
+    ticker = setInterval(tick, 250);
+    tick();
+  }
+
+  function tick() {
+    if ($("screen-question").hidden) return;
+    // Khi trang đang ẩn thì chờ; lúc quay lại, nếu đã quá giờ chỉ mất đúng một câu.
+    if (document.hidden) return;
+    var left = deadline - Date.now();
+    if (left <= 0) { answer(token, null); return; }
+    var shown = Math.ceil(left / 1000);
+    $("timer").textContent = shown;
+    $("timer").classList.toggle("warn", shown <= 5);
+  }
+
+  function answer(forToken, choice) {
+    if (forToken !== token || $("screen-question").hidden) return;
+    // Không ai đọc và trả lời kịp trong 0,35 giây: đó là cú chạm đúp từ màn hình trước.
+    if (choice !== null && Date.now() - shownAt < TAP_GUARD_MS) return;
+    token++; // khoá câu này lại: bấm đúp hay đồng hồ trùng lúc đều không tính lần hai
+    state.answers.push(choice);
+    index++;
+    if (index < state.round.length) showQuestion();
+    else showResult();
+  }
+
+  function showResult() {
+    clearInterval(ticker);
+    var r = scoreRound(state.round, state.answers);
+    $("result-iq").textContent = r.iq;
+    $("result-title").textContent = r.title.emoji + " " + r.title.name;
+    $("result-quip").textContent = r.title.quip;
+    $("result-correct").textContent = "Đúng " + r.correct + "/" + state.round.length + " câu";
+    var fb = $("btn-fbpage");
+    fb.hidden = !CONFIG.FB_PAGE_URL;
+    if (CONFIG.FB_PAGE_URL) fb.href = CONFIG.FB_PAGE_URL; else fb.removeAttribute("href");
+    show("screen-result");
+  }
+
+  $("btn-share").href = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(CONFIG.SHARE_URL);
+  $("btn-tiktok").href = CONFIG.TIKTOK_URL;
+  $("btn-start").addEventListener("click", function () { begin(); });
+  $("btn-replay").addEventListener("click", function () { begin(); });
+  document.addEventListener("visibilitychange", tick);
+})();
+</script>
+</body>
+</html>
